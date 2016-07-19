@@ -3,6 +3,11 @@
 open Xunit
 open Interval
 
+let ( <|> ) a b = orElse a b
+
+let interpret i x =
+    (Interval.isUnbounded i, Interval.isEmpty i, Interval.includes i x)
+
 let n = 10
 
 let intervals =
@@ -14,19 +19,54 @@ let intervals =
                 yield Interval.bounded i j
     ]
 
+let elements =
+    [1..n]
+
+let ( =?= ) a b =
+    Seq.forall (fun x -> interpret a x = interpret b x) elements
+
+let ( =??= ) a b =
+    Seq.forall (fun x -> a x = b x) elements
+
+(* Inclusion *)
+
 [<Fact>]
 let IncludesOk () =
     for i in 1 .. n do
-        Interval.includes Interval.empty i =? false
-        Interval.includes Interval.unbounded i =? true
+        includes empty i =? false
+        includes unbounded i =? true
         for j in i .. n do
             for k in 1 .. n do
-                Interval.includes (Interval.bounded i j) k =? ((k >= i) && (k <= j))
+                includes (bounded i j) k =? ((k >= i) && (k <= j))
 
-let intersectOk (a, b, x) =
-    includes (intersect a b) x = (includes a x && includes b x)
+(* Intersection *)
+
+let intersectOk a b =
+    includes (intersect a b) =??= fun x -> includes a x && includes b x
 
 [<Fact>]
 let IntersectOk () =
-    x3 intervals intervals [1..n]
-    |> check "intersect" intersectOk
+    check2 "intersect" intersectOk intervals intervals
+
+(* Alternative laws *)
+
+let orElseAssociative a b c =
+    ((a <|> b) <|> c) =?= (a <|> (b <|> c))
+
+let emptyLeftUnit x =
+    empty <|> x =?= x
+
+let emptyRightUnit x =
+    x <|> empty =?= x
+
+[<Fact>]
+let OrElseAssociative () =
+    check3 "orElseAssociative" orElseAssociative intervals intervals intervals
+
+[<Fact>]
+let EmptyRightUnit () =
+    check "emptyRightUnit" emptyRightUnit intervals
+
+[<Fact>]
+let OrElseHasEmptyAsLeftUnit () =
+    check "emptyLeftUnit" emptyLeftUnit intervals

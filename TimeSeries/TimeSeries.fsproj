@@ -55,6 +55,7 @@
     <Compile Include="Interval.fsi" />
     <Compile Include="Interval.fs" />
     <Compile Include="IntervalType.fs" />
+    <Compile Include="Math.fs" />
     <Compile Include="Daily.fsi" />
     <Compile Include="Daily.fs" />
     <None Include="Playground.fsx" />

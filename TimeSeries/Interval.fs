@@ -6,6 +6,12 @@ type Interval<'T when 'T : comparison> =
     | Empty
     | Unbounded
 
+    override this.ToString() =
+        match this with
+        | Bounded (a, b) -> sprintf "[%O..%O]" a b
+        | Empty -> sprintf "[]"
+        | Unbounded -> sprintf "[..]"
+        
 let empty<'T when 'T : comparison> : Interval<'T> = Empty
 
 let unbounded<'T when 'T : comparison> : Interval<'T> = Unbounded
@@ -48,3 +54,29 @@ let isUnbounded iv =
     match iv with
     | Unbounded _ -> true
     | _ -> false
+
+let isEmpty iv =
+    match iv with
+    | Empty _ -> true
+    | _ -> false
+
+let isBounded iv =
+    match iv with
+    | Bounded _ -> true
+    | _ -> false
+
+let orElse a b =
+    match a, b with
+    | Empty, x | x, Empty -> x
+    | Unbounded, _ | _, Unbounded -> Unbounded
+    | Bounded _, Bounded _ -> a
+
+let extendForward d iv =
+    match iv with
+    | Bounded (a, b) -> Bounded (a, max b d)
+    | _ -> iv
+
+let extendBackward d iv =
+    match iv with
+    | Bounded (a, b) -> Bounded (min a d, b)
+    | _ -> iv

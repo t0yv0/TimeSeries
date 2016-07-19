@@ -21,3 +21,9 @@ val upperBound : Interval<'T> -> option<'T>
 
 val isUnbounded : Interval<'T> -> bool
 
+val isEmpty : Interval<'T> -> bool
+val isBounded : Interval<'T> -> bool
+val orElse : Interval<'T> -> Interval<'T> -> Interval<'T>
+
+val extendForward : 'T -> Interval<'T> -> Interval<'T>
+val extendBackward : 'T -> Interval<'T> -> Interval<'T>

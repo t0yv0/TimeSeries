@@ -9,7 +9,7 @@ let intArrays = [[||]; [| 1 |]; [| 1; 2 |]]
 
 let dailys =
     seq {
-        for i in ints do yield select i
+        for i in ints do yield always i
         for d in Seq.take 15 days do for ar in intArrays do yield range d ar
     }
 
@@ -23,10 +23,7 @@ let coord iv (day: DateTime) =
         None
 
 let interpret d day =
-    if Interval.includes (Daily.interval d) day then
-        Some (Daily.at d day)
-    else
-        None
+    Daily.lookup d day
 
 let optApply f x =
     match f, x with
@@ -37,9 +34,9 @@ let funcDailys =
     Seq.map (map (+)) dailys
 
 [<Fact>]
-let SelectOk () =
+let AlwaysOk () =
     let selectOk (v, d) =
-        interpret (select v) d = Some v
+        interpret (always v) d = Some v
     check "select" selectOk (x2 ints days)
 
 [<Fact>]
@@ -70,19 +67,6 @@ let ValuesOk () =
         else
             days
             |> Seq.filter (Interval.includes (Daily.interval daily))
-            |> Seq.map (Daily.at daily)
+            |> Seq.map (fun d -> daily.[d])
             |> Seq.toArray = values daily
     check "values" valuesOk dailys
-
-[<Fact>]
-let LeftJoinOk () =
-    let leftJoinOk (left, right, d) =
-        let na = -1
-        let example = left |> Daily.leftJoin right na
-        let expected =
-            match interpret left d, interpret right d with
-            | Some l, Some r -> Some (l r)
-            | Some l, None -> Some (l na)
-            | _ -> None
-        interpret example d = expected
-    check "leftJoin" leftJoinOk (x3 funcDailys dailys days)
